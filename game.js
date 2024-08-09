@@ -49,9 +49,12 @@ class MainScene extends Phaser.Scene {
 
     preload() {
         // Preload anything else specific to this scene if needed
+        this.load.audio('spinSound', 'spinSound.mp3');
     }
 
     create() {
+        const spinSound = this.sound.add("spinSound");
+
         // Function to show toast message
         function showToast(message) {
             const toast = document.getElementById('toast');
@@ -84,7 +87,8 @@ class MainScene extends Phaser.Scene {
 
         // Set button click to spin the wheel
         spinButton.on('pointerdown', () => {
-            spinWheel.call(this, wheel, showToast);
+            spinSound.play();
+            spinWheel.call(this, wheel, spinSound,showToast);
         });
     }
 
@@ -103,7 +107,7 @@ const config = {
 
 const game = new Phaser.Game(config);
 
-function spinWheel(wheel, showToast) {
+function spinWheel(wheel, spinSound, showToast) {
     const rounds = Phaser.Math.Between(2, 4); // Random rounds to spin
     let degrees = Phaser.Math.Between(0, 360); // Random final position
 
@@ -124,6 +128,7 @@ function spinWheel(wheel, showToast) {
         ease: 'Cubic.easeOut',
         duration: 5250,
         onComplete: () => {
+            spinSound.stop();
             const winningSegment = determineWinningSegment(wheel.angle % 360);
 
             let winIndex = rewardList.findIndex(item => item.val == winningSegment);
