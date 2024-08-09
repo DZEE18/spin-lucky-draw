@@ -7,115 +7,64 @@ const rewardList = [
     { val: 2, label: "100 Points" }
 ];
 
-class LoadingScene extends Phaser.Scene {
-    constructor() {
-        super({ key: 'LoadingScene' });
-    }
-
-    preload() {
-        // Add a simple loading text or graphic
-        // this.add.text(this.cameras.main.centerX, this.cameras.main.centerY, 'Loading...', {
-        //     font: '32px Arial', fill: '#ffffff'
-        // }).setOrigin(0.5, 0.5);
-
-        this.load.image('loadingBackground', 'assets/images/loadingBackground.png');
-
-        // Load assets for the main scene
-        this.load.image('background', 'assets/images/background.png');
-        this.load.image('wheel', 'assets/images/wheel.png');
-        this.load.image('bgWheel', 'assets/images/bgWheel.png');
-        this.load.image('pin', 'assets/images/pin.png');
-        this.load.image('spinButton', 'assets/images/spinButton.png');
-        this.load.image('bgReward', 'assets/images/backgroundReward.png');
-        this.load.image('box', 'assets/images/box.png');
-        this.load.image('btnClaim', 'assets/images/btnClaim.png');
-    }
-
-    create() {
-
-        const background = this.add.image(0, 0, 'loadingBackground');
-        background.setOrigin(0.5, 0.5); // Center origin
-
-        // Set the initial position to the center of the canvas
-        background.setPosition(this.sys.game.config.width / 2, this.sys.game.config.height / 2);
-
-        // Calculate scale to cover the canvas
-        const scaleX = this.sys.game.config.width / background.width;
-        const scaleY = this.sys.game.config.height / background.height;
-        const scale = Math.max(scaleX, scaleY);
-        background.setScale(scale);
-
-        // Delay the transition to the main scene by 1 second
-        this.time.delayedCall(2000, () => {
-            this.scene.start('MainScene');
-        });
-    }
+function preload() {
+    this.load.image('background', 'assets/images/background.png');
+    this.load.image('wheel', 'assets/images/wheel.png');
+    this.load.image('bgWheel', 'assets/images/bgWheel.png');
+    this.load.image('pin', 'assets/images/pin.png');
+    this.load.image('spinButton', 'assets/images/spinButton.png');
+    this.load.image('bgReward', 'assets/images/backgroundReward.png');
+    this.load.image('box', 'assets/images/box.png');
+    this.load.image('btnClaim', 'assets/images/btnClaim.png');
+    this.load.audio('spinSound', 'assets/audios/spinSound.mp3');
 }
 
-class MainScene extends Phaser.Scene {
-    constructor() {
-        super({ key: 'MainScene' });
+function create() {
+    const spinSound = this.sound.add("spinSound");
+
+    // Function to show toast message
+    function showToast(message) {
+        const toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.classList.add('show');
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 3000); // Hide after 3 seconds
     }
 
-    preload() {
-        this.load.image('background', 'assets/images/background.png');
-        this.load.image('wheel', 'assets/images/wheel.png');
-        this.load.image('bgWheel', 'assets/images/bgWheel.png');
-        this.load.image('pin', 'assets/images/pin.png');
-        this.load.image('spinButton', 'assets/images/spinButton.png');
-        this.load.image('bgReward', 'assets/images/backgroundReward.png');
-        this.load.image('box', 'assets/images/box.png');
-        this.load.image('btnClaim', 'assets/images/btnClaim.png');
-        this.load.audio('spinSound', 'assets/audios/spinSound.mp3');
-    }
+    // Set the background image
+    this.add.image(this.cameras.main.centerX, this.cameras.main.centerY, 'background')
+        .setOrigin(0.5, 0.5)
+        .setDisplaySize(this.cameras.main.width, this.cameras.main.height);
 
-    create() {
-        const spinSound = this.sound.add("spinSound");
+    const bgWheel = this.add.sprite(this.cameras.main.width / 2, 250, 'bgWheel');
+    bgWheel.setScale(0.55);
+    bgWheel.setOrigin(0.5, 0.5);
+    
+    // Add the wheel
+    const wheel = this.add.sprite(this.cameras.main.width / 2, 250, 'wheel');
+    wheel.setScale(0.35);
+    wheel.setOrigin(0.5, 0.5);
 
-        // Function to show toast message
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.classList.add('show');
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000); // Hide after 3 seconds
-        }
+    // Add the pin
+    const pin = this.add.sprite(wheel.x, wheel.y, 'pin');
+    pin.setDisplaySize(100, 100);
 
-        // Set the background image
-        this.add.image(this.cameras.main.centerX, this.cameras.main.centerY, 'background')
-            .setOrigin(0.5, 0.5)
-            .setDisplaySize(this.cameras.main.width, this.cameras.main.height);
+    // Add the button below the wheel
+    const spinButton = this.add.sprite(this.cameras.main.width / 2, bgWheel.y + bgWheel.displayHeight / 2 + 50, 'spinButton');
+    spinButton.setScale(0.4);
+    spinButton.setOrigin(0.5, 0.5);
+    spinButton.setInteractive();
 
-        const bgWheel = this.add.sprite(this.cameras.main.width / 2, 250, 'bgWheel');
-        bgWheel.setScale(0.55);
-        bgWheel.setOrigin(0.5, 0.5);
-        
-        // Add the wheel
-        const wheel = this.add.sprite(this.cameras.main.width / 2, 250, 'wheel');
-        wheel.setScale(0.35);
-        wheel.setOrigin(0.5, 0.5);
+    // Set button click to spin the wheel
+    spinButton.on('pointerdown', () => {
+        spinSound.play();
+        spinWheel.call(this, wheel, spinSound, showToast);
+    });
+}
 
-        // Add the pin
-        const pin = this.add.sprite(wheel.x, wheel.y, 'pin');
-        pin.setDisplaySize(100, 100);
-
-        // Add the button below the wheel
-        const spinButton = this.add.sprite(this.cameras.main.width / 2, bgWheel.y + bgWheel.displayHeight / 2 + 50, 'spinButton');
-        spinButton.setScale(0.4);
-        spinButton.setOrigin(0.5, 0.5);
-        spinButton.setInteractive();
-
-        // Set button click to spin the wheel
-        spinButton.on('pointerdown', () => {
-            spinSound.play();
-            spinWheel.call(this, wheel, spinSound,showToast);
-        });
-    }
-
-    update() {
-        // Update the scene if necessary
-    }
+function update() {
+    // Update the scene if necessary
 }
 
 const config = {
@@ -123,7 +72,7 @@ const config = {
     width: Math.min(480, window.innerWidth), // Set max-width to 480
     height: window.innerHeight, // Set height to 100%
     parent: 'game-container',
-    scene: [MainScene] // Include both scenes in the game
+    scene: { preload, create, update } // Use the functions directly as scene methods
 };
 
 const game = new Phaser.Game(config);
@@ -153,10 +102,10 @@ function spinWheel(wheel, spinSound, showToast) {
             const winningSegment = determineWinningSegment(wheel.angle % 360);
 
             let winIndex = rewardList.findIndex(item => item.val == winningSegment);
-            console.log("Winning Segment: ", winIndex > -1 ? rewardList[winIndex].label : "Thanks");
+            // console.log("Winning Segment: ", winIndex > -1 ? rewardList[winIndex].label : "Thanks");
 
             // showToast(`${winIndex > -1 ? rewardList[winIndex].label : "Thanks"}`);
-            showPopup.call(this, winIndex > -1 ? rewardList[winIndex].label : "Thanks haha");
+            showPopup.call(this, winIndex > -1 ? rewardList[winIndex].label : "Thanks");
         }
     });
 }
