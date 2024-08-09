@@ -18,22 +18,32 @@ class LoadingScene extends Phaser.Scene {
         //     font: '32px Arial', fill: '#ffffff'
         // }).setOrigin(0.5, 0.5);
 
-        this.load.image('loadingBackground', 'loadingBackground.png');
+        this.load.image('loadingBackground', 'assets/images/loadingBackground.png');
 
         // Load assets for the main scene
-        this.load.image('background', 'background.png');
-        this.load.image('wheel', 'wheel.png');
-        this.load.image('pin', 'pin.png');
-        this.load.image('spinButton', 'spinButton.png');
-        this.load.image('bgReward', 'backgroundReward.png');
-        this.load.image('btnClaim', 'btnClaim.png');
+        this.load.image('background', 'assets/images/background.png');
+        this.load.image('wheel', 'assets/images/wheel.png');
+        this.load.image('bgWheel', 'assets/images/bgWheel.png');
+        this.load.image('pin', 'assets/images/pin.png');
+        this.load.image('spinButton', 'assets/images/spinButton.png');
+        this.load.image('bgReward', 'assets/images/backgroundReward.png');
+        this.load.image('box', 'assets/images/box.png');
+        this.load.image('btnClaim', 'assets/images/btnClaim.png');
     }
 
     create() {
-        // Add the loading background image
-        this.add.image(this.cameras.main.centerX, this.cameras.main.centerY, 'loadingBackground')
-            .setOrigin(0.5, 0.5)
-            .setDisplaySize(this.cameras.main.width, this.cameras.main.height);
+
+        const background = this.add.image(0, 0, 'loadingBackground');
+        background.setOrigin(0.5, 0.5); // Center origin
+
+        // Set the initial position to the center of the canvas
+        background.setPosition(this.sys.game.config.width / 2, this.sys.game.config.height / 2);
+
+        // Calculate scale to cover the canvas
+        const scaleX = this.sys.game.config.width / background.width;
+        const scaleY = this.sys.game.config.height / background.height;
+        const scale = Math.max(scaleX, scaleY);
+        background.setScale(scale);
 
         // Delay the transition to the main scene by 1 second
         this.time.delayedCall(2000, () => {
@@ -49,7 +59,7 @@ class MainScene extends Phaser.Scene {
 
     preload() {
         // Preload anything else specific to this scene if needed
-        this.load.audio('spinSound', 'spinSound.mp3');
+        this.load.audio('spinSound', 'assets/audios/spinSound.mp3');
     }
 
     create() {
@@ -69,6 +79,10 @@ class MainScene extends Phaser.Scene {
         this.add.image(this.cameras.main.centerX, this.cameras.main.centerY, 'background')
             .setOrigin(0.5, 0.5)
             .setDisplaySize(this.cameras.main.width, this.cameras.main.height);
+
+        const bgWheel = this.add.sprite(this.cameras.main.width / 2, 250, 'bgWheel');
+        bgWheel.setScale(0.55);
+        bgWheel.setOrigin(0.5, 0.5);
         
         // Add the wheel
         const wheel = this.add.sprite(this.cameras.main.width / 2, 250, 'wheel');
@@ -80,8 +94,8 @@ class MainScene extends Phaser.Scene {
         pin.setDisplaySize(100, 100);
 
         // Add the button below the wheel
-        const spinButton = this.add.sprite(this.cameras.main.width / 2, wheel.y + wheel.displayHeight / 2 + 50, 'spinButton');
-        spinButton.setScale(0.35);
+        const spinButton = this.add.sprite(this.cameras.main.width / 2, bgWheel.y + bgWheel.displayHeight / 2 + 50, 'spinButton');
+        spinButton.setScale(0.4);
         spinButton.setOrigin(0.5, 0.5);
         spinButton.setInteractive();
 
@@ -126,7 +140,7 @@ function spinWheel(wheel, spinSound, showToast) {
         targets: wheel,
         angle: totalAngle,
         ease: 'Cubic.easeOut',
-        duration: 5250,
+        duration: Phaser.Math.Between(4000, 5000), //Generate a random duration between 4000ms and 5000ms
         onComplete: () => {
             spinSound.stop();
             const winningSegment = determineWinningSegment(wheel.angle % 360);
@@ -134,7 +148,7 @@ function spinWheel(wheel, spinSound, showToast) {
             let winIndex = rewardList.findIndex(item => item.val == winningSegment);
             console.log("Winning Segment: ", winIndex > -1 ? rewardList[winIndex].label : "Thanks");
 
-            showToast(`${winIndex > -1 ? rewardList[winIndex].label : "Thanks"}`);
+            // showToast(`${winIndex > -1 ? rewardList[winIndex].label : "Thanks"}`);
             showPopup.call(this, winIndex > -1 ? rewardList[winIndex].label : "Thanks haha");
         }
     });
@@ -153,8 +167,11 @@ function showPopup(reward) {
     popupBackground.setOrigin(0.5, 0.5);
     popupBackground.setDisplaySize(this.cameras.main.width, this.cameras.main.height);
 
-    const style = { font: '32px Arial', fill: '#fff', align: 'center' };
-    const text = this.add.text(this.cameras.main.centerX, this.cameras.main.centerY - 50, `Congratulations!\nYou won ${reward}`, style);
+    const box = this.add.sprite(this.cameras.main.width / 2, this.cameras.main.height / 2, 'box');
+    box.setOrigin(0.5, 0.5);
+
+    const style = { font: '20px Arial', fill: '#ffffff', align: 'center' };
+    const text = this.add.text(this.cameras.main.centerX, box.y - box.displayHeight + 30, `Congratulations!\nYou won ${reward}`, style);
     text.setOrigin(0.5, 0.5);
 
     const btnClaim = this.add.image(this.cameras.main.centerX, this.cameras.main.height - 50, 'btnClaim');
@@ -164,6 +181,7 @@ function showPopup(reward) {
     btnClaim.on('pointerdown', () => {
         popupBackground.destroy(); // Remove the popup
         text.destroy();
+        box.destroy();
         btnClaim.destroy();
         // Add more logic here if needed, like moving to another scene
     });
