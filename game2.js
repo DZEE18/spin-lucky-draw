@@ -58,14 +58,7 @@ class MainScene extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image('background', 'assets/images/background.png');
-        this.load.image('wheel', 'assets/images/wheel.png');
-        this.load.image('bgWheel', 'assets/images/bgWheel.png');
-        this.load.image('pin', 'assets/images/pin.png');
-        this.load.image('spinButton', 'assets/images/spinButton.png');
-        this.load.image('bgReward', 'assets/images/backgroundReward.png');
-        this.load.image('box', 'assets/images/box.png');
-        this.load.image('btnClaim', 'assets/images/btnClaim.png');
+        // Preload anything else specific to this scene if needed
         this.load.audio('spinSound', 'assets/audios/spinSound.mp3');
     }
 
@@ -123,7 +116,7 @@ const config = {
     width: Math.min(480, window.innerWidth), // Set max-width to 480
     height: window.innerHeight, // Set height to 100%
     parent: 'game-container',
-    scene: [MainScene] // Include both scenes in the game
+    scene: [LoadingScene, MainScene] // Include both scenes in the game
 };
 
 const game = new Phaser.Game(config);
