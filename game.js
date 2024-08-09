@@ -1,3 +1,26 @@
+// Function to check and lock orientation
+function lockOrientation() {
+    if (screen.orientation && screen.orientation.lock) {
+        screen.orientation.lock('landscape').catch(err => {
+            console.warn('Orientation lock failed:', err);
+        });
+    } else {
+        // Fallback for browsers that don't support screen.orientation.lock
+        if (window.innerWidth < window.innerHeight) {
+            alert('Please rotate your device to landscape mode');
+        }
+    }
+}
+
+// Add an event listener for orientation changes
+window.addEventListener('resize', () => {
+    if (window.innerWidth < window.innerHeight) {
+        alert('Please rotate your device to landscape mode');
+        // Optionally, you can reload the page or adjust your game's layout
+        // location.reload();
+    }
+});
+
 const rewardList = [
     { val: -1, label: "5USD" },
     { val: -2, label: "20USD" },
@@ -8,6 +31,9 @@ const rewardList = [
 ];
 
 function preload() {
+    this.load.audio('collectSound', 'assets/audios/collect.mp3');
+    this.load.audio('spinSound', 'assets/audios/spinSound.mp3');
+
     this.load.image('background', 'assets/images/background.png');
     this.load.image('wheel', 'assets/images/wheel.png');
     this.load.image('bgWheel', 'assets/images/bgWheel.png');
@@ -16,11 +42,13 @@ function preload() {
     this.load.image('bgReward', 'assets/images/backgroundReward.png');
     this.load.image('box', 'assets/images/box.png');
     this.load.image('btnClaim', 'assets/images/btnClaim.png');
-    this.load.audio('spinSound', 'assets/audios/spinSound.mp3');
+    
 }
 
 function create() {
+    const collectSound = this.sound.add("collectSound");
     const spinSound = this.sound.add("spinSound");
+
 
     // Function to show toast message
     function showToast(message) {
@@ -59,7 +87,7 @@ function create() {
     // Set button click to spin the wheel
     spinButton.on('pointerdown', () => {
         spinSound.play();
-        spinWheel.call(this, wheel, spinSound, showToast);
+        spinWheel.call(this, wheel, spinSound, collectSound, showToast);
     });
 }
 
@@ -77,7 +105,7 @@ const config = {
 
 const game = new Phaser.Game(config);
 
-function spinWheel(wheel, spinSound, showToast) {
+function spinWheel(wheel, spinSound, collectSound, showToast) {
     const rounds = Phaser.Math.Between(2, 4); // Random rounds to spin
     let degrees = Phaser.Math.Between(0, 360); // Random final position
 
@@ -99,6 +127,7 @@ function spinWheel(wheel, spinSound, showToast) {
         duration: Phaser.Math.Between(4000, 5000), //Generate a random duration between 4000ms and 5000ms
         onComplete: () => {
             spinSound.stop();
+            collectSound.play();
             const winningSegment = determineWinningSegment(wheel.angle % 360);
 
             let winIndex = rewardList.findIndex(item => item.val == winningSegment);
