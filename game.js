@@ -42,13 +42,20 @@ function preload() {
     this.load.image('bgReward', 'assets/images/backgroundReward.png');
     this.load.image('box', 'assets/images/box.png');
     this.load.image('btnClaim', 'assets/images/btnClaim.png');
+
+
+    // Preload avatars
+    this.load.image('avatar1', 'assets/images/user.png');
+    this.load.image('avatar2', 'assets/images/user.png');
+    this.load.image('avatar3', 'assets/images/user.png');
+    this.load.image('avatar4', 'assets/images/user.png');
+    this.load.image('avatar5', 'assets/images/user.png');
     
 }
 
 function create() {
     const collectSound = this.sound.add("collectSound");
     const spinSound = this.sound.add("spinSound");
-
 
     // Function to show toast message
     function showToast(message) {
@@ -65,23 +72,47 @@ function create() {
         .setOrigin(0.5, 0.5)
         .setDisplaySize(this.cameras.main.width, this.cameras.main.height);
 
-    const bgWheel = this.add.sprite(this.cameras.main.width / 2, 250, 'bgWheel');
-    bgWheel.setScale(0.55);
+    // Position the wheel at the top of the screen
+    const bgWheel = this.add.sprite(this.cameras.main.width / 2, 200, 'bgWheel');
+    bgWheel.setScale(0.51);
     bgWheel.setOrigin(0.5, 0.5);
-    
-    // Add the wheel
-    const wheel = this.add.sprite(this.cameras.main.width / 2, 250, 'wheel');
-    wheel.setScale(0.35);
+
+    const wheel = this.add.sprite(this.cameras.main.width / 2, 200, 'wheel');
+    wheel.setScale(0.33);
     wheel.setOrigin(0.5, 0.5);
 
     // Add the pin
     const pin = this.add.sprite(wheel.x, wheel.y, 'pin');
     pin.setDisplaySize(100, 100);
 
-    // Add the button below the wheel
-    const spinButton = this.add.sprite(this.cameras.main.width / 2, bgWheel.y + bgWheel.displayHeight / 2 + 50, 'spinButton');
+    // Calculate the total height of the user list block
+    const users = [
+        { name: 'Kim Joung Un', avatar: 'avatar1', value: 6202 },
+        { name: 'Kim Joung Un', avatar: 'avatar2', value: 6202 },
+        { name: 'Kim Joung Un', avatar: 'avatar3', value: 6202 },
+        { name: 'Kim Joung Un', avatar: 'avatar4', value: 6202 },
+        { name: 'Kim Joung Un', avatar: 'avatar5', value: 6202 },
+    ];
+
+    const userRowHeight = 55;
+    const userBlockHeight = users.length * userRowHeight;
+
+    // Calculate the start Y position for the user block
+    const startY = this.cameras.main.height - userBlockHeight - 20; // Positioned above the bottom with some margin
+    const startX = 20; // Adjust X position as needed
+
+    // Create a Graphics object for the background of the entire user block
+    const userBlockBackground = this.add.graphics();
+    userBlockBackground.fillStyle(0xFFFFFF, 1); // Set the background color (white here)
+    userBlockBackground.fillRoundedRect(startX, startY, this.cameras.main.width - 40, userBlockHeight, 10); // Rounded rectangle with border radius
+
+    // Set the background's depth to ensure it's rendered behind other elements
+    userBlockBackground.setDepth(0);
+
+    // Position the spinButton above the user list block
+    const spinButton = this.add.sprite(this.cameras.main.width / 2, startY - 15, 'spinButton'); // Adjust Y position as needed
     spinButton.setScale(0.4);
-    spinButton.setOrigin(0.5, 0.5);
+    spinButton.setOrigin(0.5, 1); // Set origin to bottom center so it aligns to the top of the block
     spinButton.setInteractive();
 
     // Set button click to spin the wheel
@@ -89,7 +120,28 @@ function create() {
         spinSound.play();
         spinWheel.call(this, wheel, spinSound, collectSound, showToast);
     });
+
+    // Add each user to the block
+    users.forEach((user, index) => {
+        // Create a container for each user
+        const userContainer = this.add.container(startX, startY + index * userRowHeight); // Position userContainer within the user block
+    
+        // Add avatar
+        const avatar = this.add.image(10, userRowHeight / 2, user.avatar).setOrigin(0, 0.5).setDisplaySize(42, 42); // Vertically center avatar
+        userContainer.add(avatar);
+    
+        // Add name
+        const name = this.add.text(60, userRowHeight / 2 - 10, user.name, { font: '20px Arial', fill: '#7f5539' });
+        userContainer.add(name);
+    
+        // Add value
+        const value = this.add.text(this.cameras.main.width - 100, userRowHeight / 2 - 10, user.value, { font: '20px Arial', fill: '#7f5539' });
+        userContainer.add(value);
+    });
 }
+
+
+
 
 function update() {
     // Update the scene if necessary
