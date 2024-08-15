@@ -1,26 +1,3 @@
-// Function to check and lock orientation
-function lockOrientation() {
-    if (screen.orientation && screen.orientation.lock) {
-        screen.orientation.lock('landscape').catch(err => {
-            console.warn('Orientation lock failed:', err);
-        });
-    } else {
-        // Fallback for browsers that don't support screen.orientation.lock
-        if (window.innerWidth < window.innerHeight) {
-            alert('Please rotate your device to landscape mode');
-        }
-    }
-}
-
-// Add an event listener for orientation changes
-window.addEventListener('resize', () => {
-    if (window.innerWidth < window.innerHeight) {
-        alert('Please rotate your device to landscape mode');
-        // Optionally, you can reload the page or adjust your game's layout
-        // location.reload();
-    }
-});
-
 let usersData = [];
 const rewardList = [
     { val: -1, label: "5USD" },
@@ -32,6 +9,7 @@ const rewardList = [
 ];
 
 function preload() {
+    this.load.audio('introSound', 'assets/audios/intro.mp3');
     this.load.audio('collectSound', 'assets/audios/collect.mp3');
     this.load.audio('spinSound', 'assets/audios/spinSound.mp3');
 
@@ -55,6 +33,7 @@ function preload() {
 }
 
 function create() {
+    const introSound = this.sound.add("introSound");
     const collectSound = this.sound.add("collectSound");
     const spinSound = this.sound.add("spinSound");
 
@@ -122,8 +101,6 @@ function create() {
         spinWheel.call(this, wheel, spinSound, collectSound, showToast);
     });
 
-    console.log("usersData ", usersData)
-
     fetch('https://jsonplaceholder.typicode.com/users')
             .then(response => response.json())
             .then(items => {
@@ -146,6 +123,8 @@ function create() {
                     const value = this.add.text(this.cameras.main.width - 60, userRowHeight / 2 - 10, user.id, { font: '20px Arial', fill: '#7f5539' });
                     userContainer.add(value);
                 });
+
+                showStartDialog.call(this, introSound);
             })
             .catch(error => {
                 console.error('Error fetching user data:', error);
@@ -235,4 +214,51 @@ function showPopup(reward) {
         btnClaim.destroy();
         // Add more logic here if needed, like moving to another scene
     });
+}
+function showStartDialog(introSound) {
+    // Create a semi-transparent black overlay
+    const overlay = this.add.graphics();
+    overlay.fillStyle(0x000000, 0.5);
+    overlay.fillRect(0, 0, this.cameras.main.width, this.cameras.main.height);
+
+    // Create a white dialog box
+    const dialogBox = this.add.graphics();
+    dialogBox.fillStyle(0xFFFFFF, 1);
+    dialogBox.fillRoundedRect(50, 200, this.cameras.main.width - 100, 200, 10);
+
+    // Add dialog text
+    const dialogText = this.add.text(this.cameras.main.centerX, 250, "LUCKY SPIN", { font: '24px Arial', fill: '#000000' });
+    dialogText.setOrigin(0.5, 0.5);
+
+    const dialogDesc = this.add.text(this.cameras.main.centerX, 280, "Click on button to start.", { font: '16px Arial', fill: '#999' });
+    dialogDesc.setOrigin(0.5, 0.5);
+
+    // Create a button background
+    const startButtonBackground = this.add.graphics();
+    const buttonWidth = 100;
+    const buttonHeight = 40;
+    startButtonBackground.fillStyle(0x007BFF, 1);
+    startButtonBackground.fillRoundedRect(this.cameras.main.centerX - buttonWidth / 2, 340, buttonWidth, buttonHeight, 5);
+
+    // Add the start button text
+    const startButton = this.add.text(this.cameras.main.centerX, 360, "Start", { font: '20px Arial', fill: '#FFFFFF' });
+    startButton.setOrigin(0.5, 0.5);
+    startButton.setInteractive();
+
+    // Function to remove all dialog elements
+    const closeDialog = () => {
+        overlay.destroy();
+        dialogBox.destroy();
+        dialogText.destroy();
+        dialogDesc.destroy();
+        startButtonBackground.destroy();
+        startButton.destroy();
+        introSound.play({ loop: true });
+    };
+
+    // Set interactive for overlay to close the dialog when clicked
+    overlay.setInteractive().on('pointerdown', closeDialog);
+
+    // Set interactive for button and close dialog on click
+    startButton.on('pointerdown', closeDialog);
 }
