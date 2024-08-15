@@ -21,6 +21,7 @@ window.addEventListener('resize', () => {
     }
 });
 
+let usersData = [];
 const rewardList = [
     { val: -1, label: "5USD" },
     { val: -2, label: "20USD" },
@@ -121,23 +122,35 @@ function create() {
         spinWheel.call(this, wheel, spinSound, collectSound, showToast);
     });
 
-    // Add each user to the block
-    users.forEach((user, index) => {
-        // Create a container for each user
-        const userContainer = this.add.container(startX, startY + index * userRowHeight); // Position userContainer within the user block
+    console.log("usersData ", usersData)
+
+    fetch('https://jsonplaceholder.typicode.com/users')
+            .then(response => response.json())
+            .then(items => {
+                console.log("usersData", items)
+                // usersData = users;
+               // Add each user to the block
+                items.slice(0, 5).forEach((user, index) => {
+                    // Create a container for each user
+                    const userContainer = this.add.container(startX, startY + index * userRowHeight); // Position userContainer within the user block
+                
+                    // Add avatar (using dynamically loaded image)
+                    const avatar = this.add.image(10, userRowHeight / 2, `avatar5`).setOrigin(0, 0.5).setDisplaySize(42, 42); // Vertically center avatar
+                    userContainer.add(avatar);
+                
+                    // Add name
+                    const name = this.add.text(60, userRowHeight / 2 - 10, user.name, { font: '20px Arial', fill: '#7f5539' });
+                    userContainer.add(name);
+                
+                    // Add email as value
+                    const value = this.add.text(this.cameras.main.width - 60, userRowHeight / 2 - 10, user.id, { font: '20px Arial', fill: '#7f5539' });
+                    userContainer.add(value);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching user data:', error);
+            });
     
-        // Add avatar
-        const avatar = this.add.image(10, userRowHeight / 2, user.avatar).setOrigin(0, 0.5).setDisplaySize(42, 42); // Vertically center avatar
-        userContainer.add(avatar);
-    
-        // Add name
-        const name = this.add.text(60, userRowHeight / 2 - 10, user.name, { font: '20px Arial', fill: '#7f5539' });
-        userContainer.add(name);
-    
-        // Add value
-        const value = this.add.text(this.cameras.main.width - 100, userRowHeight / 2 - 10, user.value, { font: '20px Arial', fill: '#7f5539' });
-        userContainer.add(value);
-    });
 }
 
 
