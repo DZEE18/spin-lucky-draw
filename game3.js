@@ -1,13 +1,11 @@
 let usersData = [];
 const rewardList = [
-    { val: -1, label: "Rolex", weight: 1 },
-    { val: -2, label: "Thanks", weight: 100 },
-    { val: -3, label: "50 Coin", weight: 300 },
-    { val: -4, label: "70 Coin", weight: 300 },
-    { val: 3, label: "Aojiru", weight: 300 },
-    { val: 1, label: "20 USD", weight: 300 },
-    { val: 2, label: "10 USD", weight: 300 },
-    { val: 0, label: "iPhone 15", weight: 1 },
+    { val: -1, label: "5USD" },
+    { val: -2, label: "20USD" },
+    { val: -3, label: "Discount 10%" },
+    { val: 0, label: "Thanks" },
+    { val: 1, label: "50 Points" },
+    { val: 2, label: "100 Points" }
 ];
 
 function preload() {
@@ -17,18 +15,12 @@ function preload() {
 
     this.load.image('background', 'assets/images/background.png');
     this.load.image('wheel', 'assets/images/wheel.png');
-    this.load.image('bgWheelTop', 'assets/images/bgWheelTop.png');
     this.load.image('bgWheel', 'assets/images/bgWheel.png');
     this.load.image('pin', 'assets/images/pin.png');
     this.load.image('spinButton', 'assets/images/spinButton.png');
     this.load.image('bgReward', 'assets/images/backgroundReward.png');
     this.load.image('box', 'assets/images/box.png');
     this.load.image('btnClaim', 'assets/images/btnClaim.png');
-
-    this.load.image('icSound', 'assets/images/sound.png');
-    this.load.image('icSoundOff', 'assets/images/soundOff.png');
-    this.load.image('bgCoin', 'assets/images/bgCoin.png');
-    // this.load.image('bgCoin2', 'assets/images/bgCoin2.png');
 
 
     // Preload avatars
@@ -41,7 +33,6 @@ function preload() {
 }
 
 function create() {
-    let isMuted = true;
     const introSound = this.sound.add("introSound");
     const collectSound = this.sound.add("collectSound");
     const spinSound = this.sound.add("spinSound");
@@ -61,45 +52,45 @@ function create() {
         .setOrigin(0.5, 0.5)
         .setDisplaySize(this.cameras.main.width, this.cameras.main.height);
 
-    const icSoundOff = this.add.sprite(this.cameras.main.width / 2, this.cameras.main.height / 2, 'icSoundOff')
-    icSoundOff.setPosition(this.cameras.main.width-12, 12);
-    icSoundOff.setOrigin(1, -0.1);
-    icSoundOff.setScale(0.5);
+    // Position the wheel at the top of the screen
+    const bgWheel = this.add.sprite(this.cameras.main.width / 2, 200, 'bgWheel');
+    bgWheel.setScale(0.51);
+    bgWheel.setOrigin(0.5, 0.5);
 
-    const icSound = this.add.sprite(this.cameras.main.width / 2, this.cameras.main.height / 2, 'icSound')
-    icSound.setPosition(this.cameras.main.width-12, 12);
-    icSound.setOrigin(1, -0.1);
-    icSound.setScale(0.5);
-
-    const bgCoin = this.add.sprite(icSound.x - icSound.displayWidth - 10, icSound.y, 'bgCoin')
-    bgCoin.setOrigin(1, 0);
-    bgCoin.setScale(0.3);
-
-    // const bgCoin2 = this.add.sprite(bgCoin.x - bgCoin.displayWidth - 10, bgCoin.y, 'bgCoin2');
-    // bgCoin2.setOrigin(1, 0); // Keep the same origin
-    // bgCoin2.setScale(0.5);
-
-    const bgWheelTop = this.add.sprite(this.cameras.main.width / 2, 160, 'bgWheelTop');
-    bgWheelTop.setScale(0.65);
-    bgWheelTop.setOrigin(0.5, 0.5);
-
-    
-
-    const wheel = this.add.sprite(this.cameras.main.width / 2, 320, 'wheel');
+    const wheel = this.add.sprite(this.cameras.main.width / 2, 200, 'wheel');
     wheel.setScale(0.33);
     wheel.setOrigin(0.5, 0.5);
 
-    // Position the wheel at the top of the screen
-    const bgWheel = this.add.sprite(this.cameras.main.width / 2, 320, 'bgWheel');
-    bgWheel.setScale(0.67);
-    bgWheel.setOrigin(0.5, 0.5);
-
     // Add the pin
-    // const pin = this.add.sprite(wheel.x, wheel.y, 'pin');
-    // pin.setDisplaySize(56, 56);
+    const pin = this.add.sprite(wheel.x, wheel.y, 'pin');
+    pin.setDisplaySize(100, 100);
+
+    // Calculate the total height of the user list block
+    const users = [
+        { name: 'Kim Joung Un', avatar: 'avatar1', value: 6202 },
+        { name: 'Kim Joung Un', avatar: 'avatar2', value: 6202 },
+        { name: 'Kim Joung Un', avatar: 'avatar3', value: 6202 },
+        { name: 'Kim Joung Un', avatar: 'avatar4', value: 6202 },
+        { name: 'Kim Joung Un', avatar: 'avatar5', value: 6202 },
+    ];
+
+    const userRowHeight = 55;
+    const userBlockHeight = users.length * userRowHeight;
+
+    // Calculate the start Y position for the user block
+    const startY = this.cameras.main.height - userBlockHeight - 20; // Positioned above the bottom with some margin
+    const startX = 20; // Adjust X position as needed
+
+    // Create a Graphics object for the background of the entire user block
+    const userBlockBackground = this.add.graphics();
+    userBlockBackground.fillStyle(0xFFFFFF, 1); // Set the background color (white here)
+    userBlockBackground.fillRoundedRect(startX, startY, this.cameras.main.width - 40, userBlockHeight, 10); // Rounded rectangle with border radius
+
+    // Set the background's depth to ensure it's rendered behind other elements
+    userBlockBackground.setDepth(0);
 
     // Position the spinButton above the user list block
-    const spinButton = this.add.sprite(this.cameras.main.width / 2,  this.cameras.main.height - 100, 'spinButton'); // Adjust Y position as needed
+    const spinButton = this.add.sprite(this.cameras.main.width / 2, startY - 15, 'spinButton'); // Adjust Y position as needed
     spinButton.setScale(0.4);
     spinButton.setOrigin(0.5, 1); // Set origin to bottom center so it aligns to the top of the block
     spinButton.setInteractive();
@@ -110,25 +101,39 @@ function create() {
         spinWheel.call(this, wheel, spinSound, collectSound, showToast);
     });
 
+    fetch('https://jsonplaceholder.typicode.com/users')
+            .then(response => response.json())
+            .then(items => {
+                console.log("usersData", items)
+                // usersData = users;
+               // Add each user to the block
+                items.slice(0, 5).forEach((user, index) => {
+                    // Create a container for each user
+                    const userContainer = this.add.container(startX, startY + index * userRowHeight); // Position userContainer within the user block
+                
+                    // Add avatar (using dynamically loaded image)
+                    const avatar = this.add.image(10, userRowHeight / 2, `avatar5`).setOrigin(0, 0.5).setDisplaySize(42, 42); // Vertically center avatar
+                    userContainer.add(avatar);
+                
+                    // Add name
+                    const name = this.add.text(60, userRowHeight / 2 - 10, user.name, { font: '20px Arial', fill: '#7f5539' });
+                    userContainer.add(name);
+                
+                    // Add email as value
+                    const value = this.add.text(this.cameras.main.width - 60, userRowHeight / 2 - 10, user.id, { font: '20px Arial', fill: '#7f5539' });
+                    userContainer.add(value);
+                });
 
-    icSound.setInteractive();
-    icSound.on('pointerdown', () => {
-        isMuted = !isMuted;
-        introSound.setMute(isMuted); // Mute or unmute the sound
-        collectSound.setMute(isMuted);
-        spinSound.setMute(isMuted);
-
-
-        // Optionally change the sound icon based on the mute state
-        if (isMuted) {
-            icSound.setTexture('icSound'); // Assuming 'icSoundOff' is an icon for sound off
-        } else {
-            icSound.setTexture('icSoundOff'); // Switch back to the original icon
-            introSound.play();
-        }
-    });
+                showStartDialog.call(this, introSound);
+            })
+            .catch(error => {
+                console.error('Error fetching user data:', error);
+            });
     
 }
+
+
+
 
 function update() {
     // Update the scene if necessary
@@ -145,66 +150,45 @@ const config = {
 const game = new Phaser.Game(config);
 
 function spinWheel(wheel, spinSound, collectSound, showToast) {
-    const selectedReward = getWeightedReward(rewardList); // Select weighted reward
+    const rounds = Phaser.Math.Between(2, 4); // Random rounds to spin
+    let degrees = Phaser.Math.Between(0, 360); // Random final position
 
-    const segmentIndex = rewardList.indexOf(selectedReward);
-    const degreesPerSegment = 360 / rewardList.length;
-    const finalDegrees = segmentIndex * degreesPerSegment;
+    // Define the angle range to avoid, e.g., segment 3 between 90 and 135 degrees
+    const avoidSegmentStart = 90;
+    const avoidSegmentEnd = 135;
 
-    const rounds = Phaser.Math.Between(2, 4);
-    const totalAngle = 360 * rounds + finalDegrees; // Ensure it lands on the selected segment
+    // If the random angle falls within the avoid range, shift it out of that range
+    if (degrees >= avoidSegmentStart && degrees <= avoidSegmentEnd) {
+        degrees = (degrees + (avoidSegmentEnd - avoidSegmentStart + 1)) % 360;
+    }
+
+    const totalAngle = 360 * rounds + degrees;
 
     this.tweens.add({
         targets: wheel,
         angle: totalAngle,
         ease: 'Cubic.easeOut',
-        duration: Phaser.Math.Between(5000, 5000),
-        onStart: () => spinSound.play(),
+        duration: Phaser.Math.Between(4000, 5000), //Generate a random duration between 4000ms and 5000ms
         onComplete: () => {
             spinSound.stop();
             collectSound.play();
-            console.log("Winning Reward:", selectedReward.label);
-            showToast(selectedReward.label);
-        },
+            const winningSegment = determineWinningSegment(wheel.angle % 360);
+
+            let winIndex = rewardList.findIndex(item => item.val == winningSegment);
+            // console.log("Winning Segment: ", winIndex > -1 ? rewardList[winIndex].label : "Thanks");
+
+            // showToast(`${winIndex > -1 ? rewardList[winIndex].label : "Thanks"}`);
+            showPopup.call(this, winIndex > -1 ? rewardList[winIndex].label : "Thanks");
+        }
     });
 }
 
-
-function getWeightedReward(rewardList) {
-    const totalWeight = rewardList.reduce((sum, reward) => sum + reward.weight, 0);
-    let random = Math.random() * totalWeight; // Random float between 0 and totalWeight
-
-    for (const reward of rewardList) {
-        if (random < reward.weight) {
-            return reward;
-        }
-        random -= reward.weight;
-    }
-}
-
-
-
-// function determineWinningSegment(angle) {
-//     // Logic to determine the winning segment based on the angle
-//     const segmentCount = 8;
-//     const degreesPerSegment = 360 / segmentCount;
-//     return Math.floor(angle / degreesPerSegment);
-// }
-
 function determineWinningSegment(angle) {
-    const segmentCount = rewardList.length;  // Matches the rewardList length
+    // Logic to determine the winning segment based on the angle
+    const segmentCount = 6;
     const degreesPerSegment = 360 / segmentCount;
-
-    // Normalize the angle within 0-360 degrees
-    const normalizedAngle = (angle + 360) % 360;
-
-    // Calculate the segment index (adjust offset if segment 0 isn't at the top)
-    const segmentIndex = Math.floor((normalizedAngle + degreesPerSegment / 2) % 360 / degreesPerSegment);
-
-    return segmentIndex;
+    return Math.floor(angle / degreesPerSegment);
 }
-
-
 
 function showPopup(reward) {
     // Add the popup background image
@@ -212,7 +196,7 @@ function showPopup(reward) {
     popupBackground.setOrigin(0.5, 0.5);
     popupBackground.setDisplaySize(this.cameras.main.width, this.cameras.main.height);
 
-    const box = this.add.sprite(this.cameras.main.width / 2, this.cameras.main.height / 4, 'box');
+    const box = this.add.sprite(this.cameras.main.width / 2, this.cameras.main.height / 2, 'box');
     box.setOrigin(0.5, 0.5);
 
     const style = { font: '20px Arial', fill: '#ffffff', align: 'center' };
