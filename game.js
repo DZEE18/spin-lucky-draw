@@ -149,16 +149,17 @@ function spinWheel(wheel, spinSound, collectSound, showToast) {
 
     const segmentIndex = rewardList.indexOf(selectedReward);
     const degreesPerSegment = 360 / rewardList.length;
-    const finalDegrees = segmentIndex * degreesPerSegment;
+    const halfSegmentOffset = degreesPerSegment / 2; // Add half-segment for better alignment
+    const finalDegrees = segmentIndex * degreesPerSegment + halfSegmentOffset;
 
     const rounds = Phaser.Math.Between(2, 4);
-    const totalAngle = 360 * rounds + finalDegrees; // Ensure it lands on the selected segment
+    const totalAngle = 360 * rounds + finalDegrees; // Ensure it lands on the correct segment
 
     this.tweens.add({
         targets: wheel,
         angle: totalAngle,
         ease: 'Cubic.easeOut',
-        duration: Phaser.Math.Between(5000, 5000),
+        duration: Phaser.Math.Between(4000, 5000),
         onStart: () => spinSound.play(),
         onComplete: () => {
             spinSound.stop();
