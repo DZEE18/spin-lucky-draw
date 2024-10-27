@@ -1,4 +1,6 @@
 let usersData = [];
+let qrSprite;
+
 const rewardList = [
   { val: -1, label: "Rolex", weight: 1 },
   { val: -2, label: "Thanks", weight: 100 },
@@ -38,6 +40,9 @@ function preload() {
 }
 
 function create() {
+  
+
+
   let isMuted = true;
   const introSound = this.sound.add("introSound");
   const collectSound = this.sound.add("collectSound");
@@ -206,13 +211,6 @@ function getWeightedReward(rewardList) {
   }
 }
 
-// function determineWinningSegment(angle) {
-//     // Logic to determine the winning segment based on the angle
-//     const segmentCount = 8;
-//     const degreesPerSegment = 360 / segmentCount;
-//     return Math.floor(angle / degreesPerSegment);
-// }
-
 function determineWinningSegment(angle) {
   const segmentCount = rewardList.length; // Matches the rewardList length
   const degreesPerSegment = 360 / segmentCount;
@@ -229,6 +227,9 @@ function determineWinningSegment(angle) {
 }
 
 function showPopup(reward) {
+  
+  generateQR.call(this, 'https://example.com');
+
   // Create the firework sprite and play the animation at the center of the screen
   const firework = this.add.sprite(this.cameras.main.centerX, this.cameras.main.centerY, "firework");
   firework.play("fireworkAnim");
@@ -279,6 +280,16 @@ function showPopup(reward) {
     btnClaim.destroy();
     firework.destroy(); // Optional: remove firework when claiming
     // Add more logic here if needed, like moving to another scene
+
+    if (qrSprite) {
+      qrSprite.destroy();  // Destroy the QR code sprite
+      qrSprite = null;     // Reset the variable
+
+      // Remove the texture to free up resources
+      if (this.textures.exists('qrCanvas')) {
+        this.textures.remove('qrCanvas');
+      }
+    }
   });
 }
 
@@ -348,4 +359,37 @@ function showStartDialog(introSound) {
 
   // Set interactive for button and close dialog on click
   startButton.on("pointerdown", closeDialog);
+}
+
+
+function generateQR(link){
+  const qr = new QRious({
+    value: link, // The data for the QR code
+    size: 120                      // Size of the QR code
+  });
+
+  // Convert QR code to Phaser texture
+  const qrImage = new Image();
+  qrImage.src = qr.toDataURL();
+
+  qrImage.onload = () => {
+    // Create a new canvas to copy the QR code image
+    const canvas = this.textures.createCanvas('qrCanvas', qrImage.width, qrImage.height);
+    const context = canvas.context;
+
+    // Draw the QR code on the canvas
+    context.drawImage(qrImage, 0, 0);
+
+    // Refresh the canvas to update Phaser’s texture system
+    canvas.refresh();
+
+    // Create a sprite using the canvas texture
+    qrSprite = this.add.image(this.scale.width / 2 + 60, this.scale.height / 2 + 72, 'qrCanvas');
+    qrSprite.setOrigin(1, 0.5);  // Center the sprite
+  };
+
+  // Handle any errors
+  qrImage.onerror = () => {
+    console.error('Failed to load QR code image.');
+  };
 }
