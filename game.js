@@ -1,5 +1,6 @@
 let usersData = [];
 let qrSprite;
+let spinButton;
 
 const rewardList = [
   { val: -1, label: "Rolex", weight: 1 },
@@ -23,6 +24,7 @@ function preload() {
   this.load.image("bgWheel", "assets/images/bgWheel.png");
   this.load.image("pin", "assets/images/pin.png");
   this.load.image("spinButton", "assets/images/spinButton.png");
+  this.load.image("spinButtonDown", "assets/images/spinButtonDown.png");
   this.load.image("bgReward", "assets/images/blur.png");
   this.load.image("box", "assets/images/box.png");
   this.load.image("btnClaim", "assets/images/btnClaim.png");
@@ -40,15 +42,10 @@ function preload() {
 }
 
 function create() {
-  
-
-
   let isMuted = true;
   const introSound = this.sound.add("introSound");
   const collectSound = this.sound.add("collectSound");
   const spinSound = this.sound.add("spinSound");
-
-  
 
   // Function to show toast message
   function showToast(message) {
@@ -125,7 +122,7 @@ function create() {
   // pin.setDisplaySize(56, 56);
 
   // Position the spinButton above the user list block
-  const spinButton = this.add.sprite(
+  spinButton = this.add.sprite(
     this.cameras.main.width / 2,
     this.cameras.main.height - 100,
     "spinButton"
@@ -135,7 +132,15 @@ function create() {
   spinButton.setInteractive();
 
   // Set button click to spin the wheel
-  spinButton.on("pointerdown", spinWheel.bind(this, wheel, spinSound, collectSound, showToast));
+  spinButton.on("pointerdown", () => {
+    spinButton.setTexture("spinButtonDown");
+  });
+
+  spinButton.on("pointerup", spinWheel.bind(this, wheel, spinSound, collectSound, showToast));
+
+  spinButton.on("pointerout", () => {
+    spinButton.setTexture("spinButton"); // Reset if pointer leaves button area
+  });
 
   icSound.setInteractive();
   icSound.on("pointerdown", () => {
@@ -169,6 +174,8 @@ const config = {
 const game = new Phaser.Game(config);
 
 function spinWheel(wheel, spinSound, collectSound, showToast) {
+  spinButton.setTexture("spinButton"); // Reset to default state
+  spinButton.disableInteractive();
   const selectedReward = getWeightedReward(rewardList); // Select weighted reward
 
   const segmentIndex = rewardList.indexOf(selectedReward);
@@ -210,6 +217,7 @@ function getWeightedReward(rewardList) {
     random -= reward.weight;
   }
 }
+
 
 function determineWinningSegment(angle) {
   const segmentCount = rewardList.length; // Matches the rewardList length
@@ -265,7 +273,7 @@ function showPopup(reward) {
 
   const btnClaim = this.add.image(
     this.cameras.main.centerX,
-    this.cameras.main.height - 200,
+    this.cameras.main.height - 100,
     "btnClaim"
   );
   btnClaim.setOrigin(0.5, 0.5);
@@ -290,6 +298,8 @@ function showPopup(reward) {
         this.textures.remove('qrCanvas');
       }
     }
+
+    spinButton.setInteractive();
   });
 }
 
