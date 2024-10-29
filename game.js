@@ -1,6 +1,8 @@
 let usersData = [];
 let qrSprite;
 let spinButton;
+let spinNumber = 0;
+let spinNumberText;
 
 const rewardList = [
   { val: -1, label: "Rolex", weight: 1 },
@@ -43,19 +45,12 @@ function preload() {
 
 function create() {
   let isMuted = true;
+
+  getSpinNumber.call();
+
   const introSound = this.sound.add("introSound");
   const collectSound = this.sound.add("collectSound");
   const spinSound = this.sound.add("spinSound");
-
-  // Function to show toast message
-  function showToast(message) {
-    const toast = document.getElementById("toast");
-    toast.textContent = message;
-    toast.classList.add("show");
-    setTimeout(() => {
-      toast.classList.remove("show");
-    }, 3000); // Hide after 3 seconds
-  }
 
   this.anims.create({
     key: "fireworkAnim",
@@ -95,6 +90,13 @@ function create() {
   );
   bgCoin.setOrigin(1, 0);
   bgCoin.setScale(0.3);
+  bgCoin.setInteractive();
+
+  bgCoin.on("pointerdown", () => {
+    localStorage.setItem("spinNumber", 2);
+    getSpinNumber.call();
+    spinNumberText.setText(`${spinNumber}`);
+  });
 
   // const bgCoin2 = this.add.sprite(bgCoin.x - bgCoin.displayWidth - 10, bgCoin.y, 'bgCoin2');
   // bgCoin2.setOrigin(1, 0); // Keep the same origin
@@ -121,6 +123,14 @@ function create() {
   // const pin = this.add.sprite(wheel.x, wheel.y, 'pin');
   // pin.setDisplaySize(56, 56);
 
+  spinNumberText = this.add.text(
+    this.cameras.main.width / 2,
+    this.cameras.main.height - 250,
+    `${spinNumber}`,
+    { font: "24px Arial", fill: "#000000" }
+  );
+  spinNumberText.setOrigin(0.5, 1);
+
   // Position the spinButton above the user list block
   spinButton = this.add.sprite(
     this.cameras.main.width / 2,
@@ -133,6 +143,7 @@ function create() {
 
   // Set button click to spin the wheel
   spinButton.on("pointerdown", () => {
+    // validateBeforeSpin.call();
     spinButton.setTexture("spinButtonDown");
   });
 
@@ -174,6 +185,14 @@ const config = {
 const game = new Phaser.Game(config);
 
 function spinWheel(wheel, spinSound, collectSound, showToast) {
+  // validateBeforeSpin.call();
+
+  if(spinNumber < 1){
+    showToast("Please Top up to spin!");
+    return
+  }
+
+
   spinButton.setTexture("spinButton"); // Reset to default state
   spinButton.disableInteractive();
   const selectedReward = getWeightedReward(rewardList); // Select weighted reward
@@ -300,6 +319,7 @@ function showPopup(reward) {
     }
 
     spinButton.setInteractive();
+    minusSpinNumber.call();
   });
 }
 
@@ -371,7 +391,6 @@ function showStartDialog(introSound) {
   startButton.on("pointerdown", closeDialog);
 }
 
-
 function generateQR(link){
   const qr = new QRious({
     value: link, // The data for the QR code
@@ -402,4 +421,54 @@ function generateQR(link){
   qrImage.onerror = () => {
     console.error('Failed to load QR code image.');
   };
+}
+
+function getSpinNumber(){
+  const storedSpinValue = localStorage.getItem('spinNumber');
+  if(storedSpinValue){
+    spinNumber = storedSpinValue
+  }
+
+  if(spinButton){
+    if(spinNumber == 0){
+      spinButton.disableInteractive();
+    }else{
+      spinButton.setInteractive();
+    }
+  }
+}
+
+function minusSpinNumber(){
+  if(spinNumber && spinNumber > 0){
+    spinNumber = spinNumber-1
+  }else{
+    spinNumber = 0
+  }
+  if(spinButton){
+    if(spinNumber == 0){
+      spinButton.disableInteractive();
+    }else{
+      spinButton.setInteractive();
+    }
+  }
+  
+  localStorage.setItem("spinNumber", spinNumber);
+  spinNumberText.setText(`${spinNumber}`);
+}
+
+function validateBeforeSpin(){
+  if(spinNumber < 1){
+    showToast("Please Top up to spin!");
+    return
+  }
+}
+
+// Function to show toast message
+function showToast(message) {
+  const toast = document.getElementById("toast");
+  toast.textContent = message;
+  toast.classList.add("show");
+  setTimeout(() => {
+    toast.classList.remove("show");
+  }, 3000); // Hide after 3 seconds
 }
