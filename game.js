@@ -340,7 +340,7 @@ function spinWheel(wheel, spinSound, collectSound, showToast) {
 
 
       showToast(selectedReward.label);
-      showPopup.call(this, selectedReward.code);
+      showPopup.call(this, selectedReward);
     },
   });
 }
@@ -376,7 +376,7 @@ function determineWinningSegment(angle) {
 }
 
 function showPopup(reward) {
-  let qrCode = dataRewards.find(item => item.ref == reward).item
+  let qrCode = dataRewards.find(item => item.ref == reward.code).item
   qrCode = qrCode.filter(item => item.status == 'PUBLISHED')
   let linkQRCode = qrCode[0].data
 
@@ -414,7 +414,7 @@ function showPopup(reward) {
   const text = this.add.text(
     this.cameras.main.centerX,
     box.y - box.displayHeight + 130,
-    `Congratulations!\nYou won ${reward}`,
+    `Congratulations!\nYou won ${reward.label}`,
     style
   );
   text.setOrigin(0.5, 0.5);
@@ -434,7 +434,6 @@ function showPopup(reward) {
     console.log("linkQRCode ", linkQRCode)
     
     let rewardCodeStatue = await checkRewardStatus.call(this,linkQRCode)
-    await getData.call()
 
     if(!rewardCodeStatue){
       showToast("Something went wrong")
@@ -448,6 +447,10 @@ function showPopup(reward) {
       showToast("Reward link is invalid")
       return
     }
+
+    await getData.call()
+
+    showToast("Claim Success!")
 
     popupBackground.destroy(); // Remove the popup
     text.destroy();
