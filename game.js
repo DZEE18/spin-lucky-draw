@@ -6,12 +6,15 @@ let spinNumberText;
 let baseUrl = "https://uat-api-loyalty.therealreward.com";
 let token = "";
 let dataRewards = []
+let rewardAvailableStatus = "PUBLISHED" //"CLAIMED" //PUBLISHED
+let halfSegment = Phaser.Math.FloatBetween(2, 43);
 
 const config = {
   type: Phaser.AUTO,
   width: Math.min(480, window.innerWidth),
   height: window.innerHeight,
   parent: "game-container",
+  resolution: 2,
   scene: { preload, create, update },
 };
 
@@ -125,14 +128,16 @@ function preload() {
   this.load.spritesheet("firework", "assets/images/firework.png", {
     frameWidth: 480, // Width of each frame
     frameHeight: 480, // Height of each frame
+    endFrame: 10
   });
+
+  this.load.script('webfont', 'https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js');
+
 }
 
 async function create() {
   let isMuted = true;
   await getData.call();
-
-  
 
   await getSpinNumber.call();
 
@@ -140,12 +145,7 @@ async function create() {
   const collectSound = this.sound.add("collectSound");
   const spinSound = this.sound.add("spinSound");
 
-  this.anims.create({
-    key: "fireworkAnim",
-    frames: this.anims.generateFrameNumbers("firework", { start: 0, end: 9 }),
-    frameRate: 10,
-    repeat: -1,
-  });
+  
 
   // Set the background image
   this.add
@@ -309,10 +309,11 @@ function spinWheel(wheel, spinSound, collectSound, showToast) {
   spinButton.setTexture("spinButton"); // Reset to default state
   spinButton.disableInteractive();
   const selectedReward = getWeightedReward(rewardList); // Select weighted reward
+  console.log("rewardList ", rewardList)
 
   const segmentIndex = rewardList.indexOf(selectedReward);
   const degreesPerSegment = 360 / rewardList.length;
-  const halfSegmentOffset = degreesPerSegment / 2; // Add half-segment for better alignment
+  const halfSegmentOffset = halfSegment; //degreesPerSegment / 1; // Add half-segment for better alignment
   const finalDegrees = segmentIndex * degreesPerSegment + halfSegmentOffset;
 
   const rounds = Phaser.Math.Between(2, 4);
@@ -377,18 +378,30 @@ function determineWinningSegment(angle) {
 
 function showPopup(reward) {
   let qrCode = dataRewards.find(item => item.ref == reward.code).item
-  qrCode = qrCode.filter(item => item.status == 'PUBLISHED')
+  qrCode = qrCode.filter(item => item.status == rewardAvailableStatus)
   let linkQRCode = qrCode[0].data
 
-  generateQR.call(this, linkQRCode);
+  this.anims.create({
+    key: "fireworkAnim",
+    frames: this.anims.generateFrameNumbers("firework", {frames:[0,1,2,3,4,5,6,7,8,9]}),
+    frameRate: 16,
+    repeat: -1,
+  });
 
-  // Create the firework sprite and play the animation at the center of the screen
-  const firework = this.add.sprite(
-    this.cameras.main.centerX,
-    this.cameras.main.centerY,
-    "firework"
-  );
-  firework.play("fireworkAnim");
+  const firework = this.add.sprite(200,100, "firework")
+  firework.play("fireworkAnim", true)
+  firework.setDepth(1000);
+  firework.setDisplaySize(250,250);
+
+  const firework2 = this.add.sprite(100,300, "firework")
+  firework2.play("fireworkAnim", true)
+  firework2.setDepth(1000);
+  firework2.setDisplaySize(200,200);
+
+  const firework3 = this.add.sprite(this.cameras.main.width-75,250, "firework")
+  firework3.play("fireworkAnim", true)
+  firework3.setDepth(1000);
+  firework3.setDisplaySize(150,150);
 
   // Add the popup background image
   const popupBackground = this.add.image(
@@ -404,13 +417,15 @@ function showPopup(reward) {
 
   const box = this.add.sprite(
     this.cameras.main.width / 2,
-    this.cameras.main.height - 450,
+    this.cameras.main.height / 2,
     "box"
   );
   box.setOrigin(0.5, 0.5);
   box.setScale(0.6);
 
-  const style = { font: "20px Arial", fill: "#ffffff", align: "center" };
+  generateQR.call(this, linkQRCode, box);
+
+  const style = { font: "26px Charm", fill: "#ffffff", align: "center", resolution: 2 };
   const text = this.add.text(
     this.cameras.main.centerX,
     box.y - box.displayHeight + 130,
@@ -456,8 +471,9 @@ function showPopup(reward) {
     text.destroy();
     box.destroy();
     btnClaim.destroy();
-    firework.destroy(); // Optional: remove firework when claiming
-    // Add more logic here if needed, like moving to another scene
+    firework.destroy();
+    firework2.destroy();
+    firework3.destroy();
 
     if (qrSprite) {
       qrSprite.destroy(); // Destroy the QR code sprite
@@ -541,7 +557,7 @@ function showStartDialog(introSound) {
   startButton.on("pointerdown", closeDialog);
 }
 
-function generateQR(link) {
+function generateQR(link, boxImg) {
   const qr = new QRious({
     value: link, // The data for the QR code
     size: 120, // Size of the QR code
@@ -568,11 +584,11 @@ function generateQR(link) {
 
     // Create a sprite using the canvas texture
     qrSprite = this.add.image(
-      this.scale.width / 2 + 60,
-      this.scale.height / 2 + 72,
+      boxImg.x,
+      boxImg.y + boxImg.displayHeight / 2 - 12,
       "qrCanvas"
     );
-    qrSprite.setOrigin(1, 0.5); // Center the sprite
+    qrSprite.setOrigin(0.5, 1); // Center the sprite
   };
 
   // Handle any errors
@@ -602,7 +618,7 @@ async function calculateRewardListWeight(){
     let correspondingReward = dataRewards.find((r) => r.ref === reward.code);
 
     const publishedCount = correspondingReward
-      ? correspondingReward.item.filter((item) => item.status === "PUBLISHED")
+      ? correspondingReward.item.filter((item) => item.status === rewardAvailableStatus)
           .length
       : 0;
 
