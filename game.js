@@ -19,14 +19,14 @@ const config = {
 };
 
 let rewardList = [
-  { val: -1, label: "Rolex", code:"C001", weight: 0 },
-  { val: -2, label: "Thanks", code:"C002", weight: 0 },
-  { val: -3, label: "50 Coin", code:"C003", weight: 0 },
-  { val: -4, label: "70 Coin", code:"C004", weight: 0 },
-  { val: 3, label: "Aojiru", code:"C005", weight: 0 },
-  { val: 1, label: "20 USD", code:"C006", weight: 0 },
-  { val: 2, label: "10 USD", code:"C007", weight: 0 },
-  { val: 0, label: "iPhone 15", code:"C008", weight: 0 },
+  { val: -1, label: "Jelly 1 Stick", code:"C001", weight: 0 },
+  { val: -2, label: "Tole Bag", code:"C002", weight: 0 },
+  { val: -3, label: "Sakkin Kid", code:"C003", weight: 0 },
+  { val: -4, label: "Sakkin 100ml", code:"C004", weight: 0 },
+  { val: 3, label: "Sakkin Veggie", code:"C005", weight: 0 },
+  { val: 1, label: "Aojiru 1 Box", code:"C006", weight: 0 },
+  { val: 2, label: "Aojiru Gift $10", code:"C007", weight: 0 },
+  { val: 0, label: "Voucher $2", code:"C008", weight: 0 },
 ];
 
 async function getToken() {
@@ -130,7 +130,6 @@ function preload() {
     frameHeight: 480, // Height of each frame
     endFrame: 10
   });
-
   this.load.script('webfont', 'https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js');
 
 }
@@ -242,7 +241,7 @@ async function create() {
   bgWheelTop.setOrigin(0.5, 0.5);
 
   const wheel = this.add.sprite(this.cameras.main.width / 2, 320, "wheel");
-  wheel.setScale(0.33);
+  wheel.setScale(0.26);
   wheel.setOrigin(0.5, 0.5);
 
   // Position the wheel at the top of the screen
