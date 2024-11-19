@@ -19,14 +19,14 @@ const config = {
 };
 
 let rewardList = [
-  { val: -1, label: "Jelly 1 Stick", code:"C001", weight: 0 },
-  { val: -2, label: "Tole Bag", code:"C002", weight: 0 },
-  { val: -3, label: "Sakkin Kid", code:"C003", weight: 0 },
-  { val: -4, label: "Sakkin 100ml", code:"C004", weight: 0 },
-  { val: 3, label: "Sakkin Veggie", code:"C005", weight: 0 },
-  { val: 1, label: "Aojiru 1 Box", code:"C006", weight: 0 },
-  { val: 2, label: "Aojiru Gift $10", code:"C007", weight: 0 },
-  { val: 0, label: "Voucher $2", code:"C008", weight: 0 },
+  { val: -1, label: "Jelly 1 Stick", code:"C001", weight: 0, img:"reward_r001" },
+  { val: -2, label: "Tole Bag", code:"C002", weight: 0, img:"reward_r002" },
+  { val: -3, label: "Sakkin Kid", code:"C003", weight: 0, img:"reward_r003" },
+  { val: -4, label: "Sakkin 100ml", code:"C004", weight: 0, img:"reward_r004" },
+  { val: 3, label: "Sakkin Veggie", code:"C005", weight: 0, img:"reward_r005" },
+  { val: 1, label: "Aojiru 1 Box", code:"C006", weight: 0, img:"reward_r006" },
+  { val: 2, label: "Aojiru Gift $10", code:"C007", weight: 0, img:"reward_r007" },
+  { val: 0, label: "Voucher $10", code:"C008", weight: 0, img:"reward_r008" },
 ];
 
 async function getToken() {
@@ -124,6 +124,15 @@ function preload() {
 
   this.load.image("btnAdd", "assets/images/add.png");
   this.load.image("btnMinus", "assets/images/minus.png");
+
+  this.load.image("reward_r001", "assets/images/r001.png");
+  this.load.image("reward_r002", "assets/images/r002.png");
+  this.load.image("reward_r003", "assets/images/r003.png");
+  this.load.image("reward_r004", "assets/images/r004.png");
+  this.load.image("reward_r005", "assets/images/r005.png");
+  this.load.image("reward_r006", "assets/images/r006.png");
+  this.load.image("reward_r007", "assets/images/r007.png");
+  this.load.image("reward_r008", "assets/images/r008.png");
 
   this.load.spritesheet("firework", "assets/images/firework.png", {
     frameWidth: 480, // Width of each frame
@@ -378,6 +387,8 @@ function determineWinningSegment(angle) {
 function showPopup(reward) {
   let qrCode = dataRewards.find(item => item.ref == reward.code).item
   qrCode = qrCode.filter(item => item.status == rewardAvailableStatus)
+
+  console.log("reward ", reward.img)
   let linkQRCode = qrCode[0].data
 
   this.anims.create({
@@ -414,13 +425,12 @@ function showPopup(reward) {
     this.cameras.main.height
   );
 
-  const box = this.add.sprite(
-    this.cameras.main.width / 2,
+  const box = this.add.sprite(this.cameras.main.width / 2,
     this.cameras.main.height / 2,
-    "box"
+    `${reward.img}`
   );
   box.setOrigin(0.5, 0.5);
-  box.setScale(0.6);
+  box.setScale(0.16);
 
   generateQR.call(this, linkQRCode, box);
 
